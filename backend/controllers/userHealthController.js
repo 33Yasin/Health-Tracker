@@ -2,26 +2,35 @@ import UserHealth from '../models/userHealth.js';
 
 export const createUserHealth = async (req, res) => {
   try {
-    const { user_id, birthDate, gender, height, weight, target_weight, bmi } = req.body;
+    const { 
+      user_id, birthDate, gender, height, weight, 
+      target_weight, target_steps, target_sleep, 
+      target_calories, target_distance, bmi 
+    } = req.body;
 
     // Veri doğrulama
-    if (!user_id || !birthDate || !gender || !height || !weight || !target_weight || !bmi) {
+    if (!user_id || !birthDate || !gender || !height || !weight || 
+        !target_weight || !target_steps || !target_sleep || 
+        !target_calories || !target_distance || !bmi) {
       return res.status(400).json({ 
         message: "Missing required fields",
-        received: { user_id, birthDate, gender, height, weight, target_weight, bmi }
+        received: req.body
       });
     }
 
     // Mevcut kayıt kontrolü
     const existingHealth = await UserHealth.findOne({ user_id });
     if (existingHealth) {
-      // Güncelleme yap
       Object.assign(existingHealth, {
         birthDate: new Date(birthDate),
         gender,
         height,
         weight,
         target_weight,
+        target_steps,
+        target_sleep,
+        target_calories,
+        target_distance,
         bmi
       });
       await existingHealth.save();
@@ -39,6 +48,10 @@ export const createUserHealth = async (req, res) => {
       height,
       weight,
       target_weight,
+      target_steps,
+      target_sleep,
+      target_calories,
+      target_distance,
       bmi
     });
 
@@ -52,8 +65,7 @@ export const createUserHealth = async (req, res) => {
     console.error('Create user health error:', error);
     return res.status(500).json({ 
       message: "Error saving health information", 
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: error.message
     });
   }
 };

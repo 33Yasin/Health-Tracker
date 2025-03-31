@@ -2,30 +2,78 @@ import DailyHealth from '../models/dailyHealth.js';
 
 export const addDailyHealth = async (req, res) => {
   try {
-    const { user_id, date } = req.body;
+    const { user_id, date, field, value } = req.body;
 
-    // Aynı gün için kayıt var mı kontrol et
+    // Enhanced validation
+    if (!user_id || !field || value === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields',
+        received: req.body,
+        required: ['user_id', 'field', 'value']
+      });
+    }
+
+    // Ensure date is valid
+    const validDate = date ? new Date(date) : new Date();
+    if (isNaN(validDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid date format',
+        received: date
+      });
+    }
+
+    // Set day boundaries
+    const dayStart = new Date(validDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(validDate);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    // Find existing record
     let dailyHealth = await DailyHealth.findOne({
       user_id,
       date: {
-        $gte: new Date(date).setHours(0, 0, 0, 0),
-        $lt: new Date(date).setHours(23, 59, 59, 999)
+        $gte: dayStart,
+        $lt: dayEnd
       }
     });
 
     if (dailyHealth) {
-      // Mevcut kaydı güncelle
-      Object.assign(dailyHealth, req.body);
-      await dailyHealth.save();
+      // Direkt değer atama - artık birikimli toplama yok
+      dailyHealth[field] = parseFloat(value);
     } else {
       // Yeni kayıt oluştur
-      dailyHealth = new DailyHealth(req.body);
-      await dailyHealth.save();
+      dailyHealth = new DailyHealth({
+        user_id,
+        date: validDate,
+        [field]: parseFloat(value)
+      });
     }
 
-    res.status(201).json({ success: true, data: dailyHealth });
+    // Ensure the field exists in the schema
+    if (!dailyHealth[field] && dailyHealth[field] !== 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid field: ${field}`,
+        allowedFields: Object.keys(DailyHealth.schema.paths)
+      });
+    }
+
+    await dailyHealth.save();
+
+    res.status(200).json({
+      success: true,
+      data: dailyHealth,
+      message: 'Daily health data updated successfully'
+    });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    console.error('Daily health update error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 

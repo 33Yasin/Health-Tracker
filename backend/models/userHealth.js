@@ -8,6 +8,10 @@ const userHealthSchema = new mongoose.Schema(
   height: { type: Number, required: true },
   weight: { type: Number, required: true },
   target_weight: { type: Number, required: true },
+  target_steps: { type: Number, required: true },
+  target_sleep: { type: Number, required: true },
+  target_calories: { type: Number, required: true },
+  target_distance: { type: Number, required: true },
   bmi: { type: Number, required: true },
   created_at: { type: Date, default: Date.now }
 },

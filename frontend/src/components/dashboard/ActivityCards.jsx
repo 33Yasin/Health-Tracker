@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS } from 'chart.js/auto';
 
 export const ActivityCard = ({ title, current, goal, color, icon: Icon, unit, target }) => {
+  const chartRef = useRef(null);
+  const chartId = `chart-${title.toLowerCase().replace(/\s+/g, '-')}`;
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, []);
+
   let percentage;
   if (title === 'Weight' && target) {
     // For weight, calculate percentage based on progress to target
@@ -26,7 +39,10 @@ export const ActivityCard = ({ title, current, goal, color, icon: Icon, unit, ta
     cutout: '80%',
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false } }
+    plugins: { 
+      legend: { display: false },
+      id: chartId 
+    }
   };
 
   return (
@@ -38,7 +54,12 @@ export const ActivityCard = ({ title, current, goal, color, icon: Icon, unit, ta
         </div>
       </div>
       <div className="relative h-48">
-        <Doughnut data={chartData} options={options} />
+        <Doughnut 
+          ref={chartRef}
+          data={chartData} 
+          options={options}
+          id={chartId}
+        />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-3xl font-bold">{current}</span>
           <span className="text-gray-500">{unit}</span>

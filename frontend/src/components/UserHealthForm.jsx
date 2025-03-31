@@ -12,7 +12,11 @@ const UserHealthForm = () => {
     height: '',
     weight: '',
     target_weight: '', // Add target weight
-    bmi: '' // Add BMI field
+    bmi: '', // Add BMI field
+    target_steps: '10000', // default values
+    target_sleep: '8',
+    target_calories: '2500',
+    target_distance: '5',
   });
   const [userName, setUserName] = useState('');
   const [calculatedAge, setCalculatedAge] = useState(null);
@@ -47,29 +51,12 @@ const UserHealthForm = () => {
     return age;
   };
 
-  const calculateBMI = (weight, height) => {
-    if (!weight || !height) return 0;
-    const heightInMeters = height / 100;
-    return (weight / (heightInMeters * heightInMeters)).toFixed(2);
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserHealthData(prev => {
-      const newData = {
-        ...prev,
-        [name]: value
-      };
-
-      // Calculate BMI when weight or height changes
-      if (name === 'weight' || name === 'height') {
-        if (newData.weight && newData.height) {
-          newData.bmi = calculateBMI(newData.weight, newData.height);
-        }
-      }
-
-      return newData;
-    });
+    setUserHealthData(prev => ({
+      ...prev,
+      [name]: value
+    }));
 
     if (name === 'birthDate') {
       const age = calculateAge(value);
@@ -170,17 +157,81 @@ const UserHealthForm = () => {
           />
         </div>
 
-        {userHealthData.bmi && (
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-lg font-medium text-gray-700">Your BMI</h3>
-            <p className="text-2xl font-bold text-indigo-600">{userHealthData.bmi}</p>
-            <p className="text-sm text-gray-500">
-              {userHealthData.bmi < 18.5 ? 'Underweight' :
-              userHealthData.bmi < 25 ? 'Normal weight' :
-              userHealthData.bmi < 30 ? 'Overweight' : 'Obese'}
-            </p>
+        <div className="mt-8 border-t pt-6">
+          <h3 className="text-lg font-semibold mb-4">Your Daily Goals</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium">
+                Target Weight (kg):
+              </label>
+              <input
+                type="number"
+                name="target_weight"
+                value={userHealthData.target_weight}
+                onChange={handleChange}
+                required
+                className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium">
+                Daily Steps Goal:
+              </label>
+              <input
+                type="number"
+                name="target_steps"
+                value={userHealthData.target_steps}
+                onChange={handleChange}
+                required
+                className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium">
+                Sleep Goal (hours):
+              </label>
+              <input
+                type="number"
+                name="target_sleep"
+                value={userHealthData.target_sleep}
+                onChange={handleChange}
+                required
+                className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium">
+                Daily Calories Goal:
+              </label>
+              <input
+                type="number"
+                name="target_calories"
+                value={userHealthData.target_calories}
+                onChange={handleChange}
+                required
+                className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium">
+                Daily Distance Goal (km):
+              </label>
+              <input
+                type="number"
+                name="target_distance"
+                value={userHealthData.target_distance}
+                onChange={handleChange}
+                required
+                className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
           </div>
-        )}
+        </div>
 
         <button
           type="submit"

@@ -55,22 +55,20 @@ const HomePage = () => {
 
       const userId = JSON.parse(atob(token.split('.')[1])).id;
       
-      // Mevcut günün verilerini kontrol et
-      const existingDayData = healthData.find(d => 
-        new Date(d.date).toDateString() === selectedDate.toDateString()
-      ) || {};
-
-      await addDailyHealth({
-        ...existingDayData,
+      const updateData = {
         user_id: userId,
         date: selectedDate,
-        [statId]: parseFloat(value)
-      });
+        field: statId, // Specific field being updated
+        value: value, // New value
+        height: userHealthInfo?.height // Include height for BMI calculation
+      };
 
-      await loadHealthData(); // Verileri yeniden yükle
+      await addDailyHealth(updateData);
+      await loadHealthData(); // Reload data
       toast.success('Data updated successfully');
     } catch (error) {
-      toast.error('Error updating data');
+      console.error('Update error:', error);
+      toast.error(error.response?.data?.message || 'Error updating data');
     }
   };
 
@@ -78,7 +76,7 @@ const HomePage = () => {
     {
       title: 'Steps',
       current: healthData[0]?.steps || 0,
-      goal: 10000,
+      goal: userHealthInfo?.target_steps || 10000,
       color: '#FF9500',
       icon: FaWalking,
       unit: 'steps'
@@ -86,7 +84,7 @@ const HomePage = () => {
     {
       title: 'Sleep',
       current: healthData[0]?.sleep_hours || 0,
-      goal: 8,
+      goal: userHealthInfo?.target_sleep || 8,
       color: '#63B3ED',
       icon: FaBed,
       unit: 'hours'
@@ -94,14 +92,14 @@ const HomePage = () => {
     {
       title: 'Calories',
       current: healthData[0]?.calories_burned || 0,
-      goal: 2500,
+      goal: userHealthInfo?.target_calories || 2500,
       color: '#F56565',
       icon: FaFireAlt,
       unit: 'kcal'
     },
     {
       title: 'Weight',
-      current: healthData[0]?.weight || 0,
+      current: healthData[0]?.weight || userHealthInfo?.weight || 0,
       goal: userHealthInfo?.weight || 0,
       target: userHealthInfo?.target_weight || 0,
       color: '#9F7AEA',
@@ -109,6 +107,13 @@ const HomePage = () => {
       unit: 'kg'
     }
   ];
+
+  // Debug için verileri konsola yazdır
+  useEffect(() => {
+    console.log('UserHealthInfo:', userHealthInfo);
+    console.log('HealthData:', healthData);
+    console.log('ActivityCards:', activityCards);
+  }, [userHealthInfo, healthData]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -125,7 +130,10 @@ const HomePage = () => {
             {/* Activity Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {activityCards.map((card, index) => (
-                <ActivityCard key={index} {...card} />
+                <ActivityCard 
+                  key={`${card.title}-${index}`}  // Unique key
+                  {...card} 
+                />
               ))}
             </div>
 
@@ -133,7 +141,10 @@ const HomePage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <StatCards
-                  data={healthData[0] || {}}
+                  data={{
+                    ...healthData[0],
+                    ...userHealthInfo, // Hedef değerleri ekle
+                  }}
                   onUpdate={handleStatUpdate}
                 />
               </div>
