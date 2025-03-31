@@ -40,14 +40,18 @@ export const addDailyHealth = async (req, res) => {
     });
 
     if (dailyHealth) {
-      // Direkt değer atama - artık birikimli toplama yok
-      dailyHealth[field] = parseFloat(value);
+      // Special handling for mood field
+      if (field === 'mood') {
+        dailyHealth[field] = value;
+      } else {
+        // For numeric fields like water_intake and others
+        dailyHealth[field] = parseFloat(value);
+      }
     } else {
-      // Yeni kayıt oluştur
       dailyHealth = new DailyHealth({
         user_id,
         date: validDate,
-        [field]: parseFloat(value)
+        [field]: field === 'mood' ? value : parseFloat(value)
       });
     }
 

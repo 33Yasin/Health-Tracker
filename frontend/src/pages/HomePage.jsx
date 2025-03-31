@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaBed, FaWalking, FaFireAlt, FaWeight } from 'react-icons/fa';
+import { FaBed, FaWalking, FaFireAlt, FaGlassWhiskey } from 'react-icons/fa';
+import { MdMood } from 'react-icons/md';
 import NavBar from '../components/NavBar';
 import StatCards from '../components/dashboard/StatCards';
 import ActivityCard from '../components/dashboard/ActivityCards';
@@ -38,14 +39,20 @@ const HomePage = () => {
       const token = localStorage.getItem('token');
       if (token) {
         const userId = JSON.parse(atob(token.split('.')[1])).id;
-        // Seçili tarihe göre veri al
         const startOfDay = new Date(selectedDate);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(selectedDate);
         endOfDay.setHours(23, 59, 59, 999);
 
         const response = await getDailyHealth(userId, startOfDay, endOfDay);
-        setHealthData(response.data || []);
+        const dailyData = response.data?.[0] || {};
+        
+        const healthDataWithDefaults = {
+          ...userHealthInfo, 
+          ...dailyData, 
+        };
+
+        setHealthData([healthDataWithDefaults]);
       }
     } catch (error) {
       toast.error('Error loading health data');
@@ -64,18 +71,27 @@ const HomePage = () => {
       const updateData = {
         user_id: userId,
         date: selectedDate,
-        field: statId, // Specific field being updated
-        value: value, // New value
-        height: userHealthInfo?.height // Include height for BMI calculation
+        field: statId,
+        value: value,
+        height: healthData[0]?.height || userHealthInfo?.height
       };
 
       await addDailyHealth(updateData);
-      await loadHealthData(); // Reload data
+      await loadHealthData(); // Reload latest data
       toast.success('Data updated successfully');
     } catch (error) {
       console.error('Update error:', error);
       toast.error(error.response?.data?.message || 'Error updating data');
     }
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const activityCards = [
@@ -88,12 +104,12 @@ const HomePage = () => {
       unit: 'steps'
     },
     {
-      title: 'Sleep',
-      current: healthData[0]?.sleep_hours || 0,
-      goal: userHealthInfo?.target_sleep || 8,
-      color: '#63B3ED',
-      icon: FaBed,
-      unit: 'hours'
+      title: 'Distance',
+      current: healthData[0]?.distance_km || 0,
+      goal: userHealthInfo?.target_distance || 5,
+      color: '#10B981',
+      icon: FaWalking,
+      unit: 'km'
     },
     {
       title: 'Calories',
@@ -104,17 +120,24 @@ const HomePage = () => {
       unit: 'kcal'
     },
     {
-      title: 'Weight',
-      current: healthData[0]?.weight || userHealthInfo?.weight || 0,
-      goal: userHealthInfo?.weight || 0,
-      target: userHealthInfo?.target_weight || 0,
-      color: '#9F7AEA',
-      icon: FaWeight,
-      unit: 'kg'
+      title: 'Water',
+      current: healthData[0]?.water_intake || 0,
+      goal: userHealthInfo?.target_water || 2500,
+      color: '#3B82F6',
+      icon: FaGlassWhiskey,
+      unit: 'ml'
+    },
+    {
+      title: 'Sleep',
+      current: healthData[0]?.sleep_hours || 0,
+      goal: userHealthInfo?.target_sleep || 8,
+      color: '#63B3ED',
+      icon: FaBed,
+      unit: 'hours'
     }
   ];
 
-  // Debug için verileri konsola yazdır
+  
   useEffect(() => {
     console.log('UserHealthInfo:', userHealthInfo);
     console.log('HealthData:', healthData);
@@ -125,7 +148,10 @@ const HomePage = () => {
     <div className="min-h-screen bg-gray-50">
       <NavBar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Health Dashboard</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Health Dashboard</h1>
+          <span className="text-lg text-gray-600">{formatDate(selectedDate)}</span>
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
@@ -133,8 +159,8 @@ const HomePage = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Activity Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Activity Cards - Updated grid layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
               {activityCards.map((card, index) => (
                 <ActivityCard 
                   key={`${card.title}-${index}`}  // Unique key
@@ -149,7 +175,7 @@ const HomePage = () => {
                 <StatCards
                   data={{
                     ...healthData[0],
-                    ...userHealthInfo, // Hedef değerleri ekle
+                    ...userHealthInfo, // add target values from userHealthInfo
                   }}
                   onUpdate={handleStatUpdate}
                 />

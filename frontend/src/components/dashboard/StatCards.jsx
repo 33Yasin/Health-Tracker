@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { FaBed, FaWalking, FaRuler, FaWeight, FaPlus, FaMinus, FaSave } from 'react-icons/fa';
+import { FaBed, FaWalking, FaRuler, FaWeight, FaPlus, FaMinus, FaSave, FaGlassWhiskey } from 'react-icons/fa';
 import { GiFireDash } from 'react-icons/gi';
+import { MdMood } from 'react-icons/md';
 
 const BMIIndicator = ({ bmi }) => {
   const getBMICategory = (bmi) => {
@@ -25,79 +26,158 @@ const BMIIndicator = ({ bmi }) => {
   );
 };
 
-const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave }) => {
+const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave, customRender }) => {
   const [inputValue, setInputValue] = useState('');
-  const [isAddMode, setIsAddMode] = useState(true);
+  const [localValue, setLocalValue] = useState(value);
 
-  const handleToggleMode = () => {
-    setIsAddMode(!isAddMode);
-    setInputValue('');
-  };
+  // Update localValue when prop value changes
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   const handleSave = async () => {
     if (!inputValue) return;
     
     const inputNum = parseFloat(inputValue);
-    const currentValue = parseFloat(value) || 0;
     
-    // Hesapla ama direkt gönder
-    const newValue = isAddMode ? 
-      currentValue + inputNum : 
-      Math.max(0, currentValue - inputNum);
-    
-    await onSave(newValue);
-    setInputValue('');
+    try {
+      await onSave(inputNum);
+      setLocalValue(inputNum); // Update local display and progress immediately
+      setInputValue('');
+    } catch (error) {
+      console.error('Error saving:', error);
+    }
   };
 
-  const progress = (value / target) * 100;
-  const progressColor = progress >= 100 ? 'bg-green-500' : 'bg-indigo-600';
+  const getMoodProgress = (mood) => {
+    const moodValues = {
+      'terrible': 20,    
+      'bad': 40,        
+      'neutral': 60,     
+      'good': 80,        
+      'great': 100       
+    };
+    return moodValues[mood] || 60;
+  };
+
+  const getMoodColor = (mood) => {
+    const moodColors = {
+      'terrible': 'bg-red-500',      
+      'bad': 'bg-orange-500',        
+      'neutral': 'bg-yellow-500',    
+      'good': 'bg-blue-500',         
+      'great': 'bg-green-500'       
+    };
+    return moodColors[mood] || 'bg-gray-400';
+  };
+
+  const getMoodColorHex = (mood) => {
+    const moodColors = {
+      'terrible': '#EF4444',      
+      'bad': '#F97316',          
+      'neutral': '#EAB308',      
+      'good': '#3B82F6',         
+      'great': '#22C55E'         
+    };
+    return moodColors[mood] || '#9CA3AF';
+  };
+
+  // Update progress calculation
+  const getProgress = () => {
+    if (title === 'Mood') {
+      return getMoodProgress(localValue);
+    }
+    if (!localValue || !target) return 0;
+    return Math.min((parseFloat(localValue) / parseFloat(target)) * 100, 100);
+  };
+
+  // Use localValue instead of value for display
+  const progress = getProgress();
+
+  const progressColor = title === 'Mood'
+    ? getMoodColor(localValue)
+    : progress >= 100 ? 'bg-green-500' : 'bg-indigo-600';
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
-          <Icon className="text-2xl" style={{ color: progress >= 100 ? '#10B981' : '#4F46E5' }} />
+          <Icon 
+            className="text-2xl" 
+            style={{ 
+              color: title === 'Mood' 
+                ? getMoodColorHex(localValue)
+                : progress >= 100 ? '#10B981' : '#4F46E5' 
+            }} 
+          />
           <h3 className="text-lg font-medium text-gray-900">{title}</h3>
         </div>
-        <div className="text-2xl font-bold text-gray-900">{value || '0'}</div>
+        <div className="text-2xl font-bold text-gray-900">
+          {title === 'Mood' ? (localValue || 'neutral') : (localValue || '0')}
+        </div>
       </div>
 
       <div className="relative h-2 bg-gray-200 rounded-full mb-4">
         <div 
-          className={`absolute h-2 ${progressColor} rounded-full transition-all duration-500`}
-          style={{ width: `${Math.min(progress, 100)}%` }}
+          className={`absolute h-2 ${
+            title === 'Mood' ? getMoodColor(localValue) : progressColor
+          } rounded-full transition-all duration-500`}
+          style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="flex justify-between items-center text-sm text-gray-600 mb-4">
-        <span>{unit}</span>
-        <span>Goal: {target} {unit}</span>
-      </div>
-
-      <div className="flex gap-2 mt-4">
-        <div className="flex-1 relative">
-          <input
-            type="number"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder={`${isAddMode ? 'Add' : 'Subtract'} value`}
-            className="w-full p-2 border rounded-lg pr-12 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
+      {customRender ? (
+        customRender(localValue, onSave)
+      ) : (
+        <div className="flex gap-2 mt-4">
+          <div className="flex-1">
+            <input
+              type="number"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Enter value"
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
           <button
-            onClick={handleToggleMode}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600"
+            onClick={handleSave}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
           >
-            {isAddMode ? <FaPlus /> : <FaMinus />}
+            <FaSave />
+            Save
           </button>
         </div>
+      )}
+    </div>
+  );
+};
+
+const MoodSelector = ({ value, onChange }) => {
+  const moods = [
+    { value: 'terrible', emoji: '😫', label: 'Terrible' },
+    { value: 'bad', emoji: '😞', label: 'Bad' },
+    { value: 'neutral', emoji: '😐', label: 'Neutral' },
+    { value: 'good', emoji: '😊', label: 'Good' },
+    { value: 'great', emoji: '😄', label: 'Great' }
+  ];
+
+  return (
+    <div className="flex items-center justify-between w-full gap-1">
+      {moods.map((mood) => (
         <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+          key={mood.value}
+          onClick={() => onChange(mood.value)}
+          className={`flex flex-col items-center p-1 rounded-lg transition-all ${
+            value === mood.value 
+              ? 'bg-indigo-100 scale-105 shadow-sm' 
+              : 'hover:bg-gray-100'
+          }`}
+          title={mood.label}
         >
-          <FaSave />
-          Save
+          <span className="text-lg">{mood.emoji}</span>
+          <span className="text-[10px] text-gray-600">{mood.label}</span>
         </button>
-      </div>
+      ))}
     </div>
   );
 };
@@ -105,8 +185,11 @@ const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave }) 
 const StatCards = ({ data, onUpdate }) => {
   const [localData, setLocalData] = useState(data);
 
+  // Update local data when props change
   useEffect(() => {
-    setLocalData(data);
+    if (data) {
+      setLocalData(data);
+    }
   }, [data]);
 
   const calculateBMI = (weight, height) => {
@@ -137,7 +220,6 @@ const StatCards = ({ data, onUpdate }) => {
     }
     setLocalData(newData);
     
-    // Her değişiklikte veritabanına kaydet
     try {
       await onUpdate(id, value, new Date());
     } catch (error) {
@@ -148,19 +230,17 @@ const StatCards = ({ data, onUpdate }) => {
   const handleSave = async (id, newValue) => {
     try {
       await onUpdate(id, newValue);
+      // Update local state immediately after successful save
+      setLocalData(prev => ({
+        ...prev,
+        [id]: newValue
+      }));
     } catch (error) {
       console.error('Error saving data:', error);
     }
   };
 
   const stats = [
-    { 
-      id: 'sleep_hours', 
-      title: 'Sleep', 
-      icon: FaBed, 
-      unit: 'hours', 
-      target: data?.target_sleep || 0 
-    },
     { 
       id: 'steps', 
       title: 'Steps', 
@@ -183,22 +263,33 @@ const StatCards = ({ data, onUpdate }) => {
       target: data?.target_calories || 0 
     },
     { 
-      id: 'weight', 
-      title: 'Weight', 
-      icon: FaWeight, 
-      unit: 'kg', 
-      target: data?.target_weight || 0 
+      id: 'water_intake', 
+      title: 'Water Intake', 
+      icon: FaGlassWhiskey, 
+      unit: 'ml', 
+      target: data?.target_water || 2500 
     },
     { 
-      id: 'height', 
-      title: 'Height', 
-      icon: FaRuler, 
-      unit: 'cm',
-      target: data?.height || 0 // Height için hedef değeri mevcut boy olarak kullan
+      id: 'sleep_hours', 
+      title: 'Sleep', 
+      icon: FaBed, 
+      unit: 'hours', 
+      target: data?.target_sleep || 0 
+    },
+    { 
+      id: 'mood', 
+      title: 'Mood', 
+      icon: MdMood,
+      customRender: (value, onSave) => (
+        <MoodSelector
+          value={value || 'neutral'}
+          onChange={(newMood) => onSave(newMood)}
+        />
+      )
     }
   ];
 
-  // Debug için verileri konsola yazdır
+  
   useEffect(() => {
     console.log('StatCards data:', data);
     console.log('Local data:', localData);
@@ -217,16 +308,9 @@ const StatCards = ({ data, onUpdate }) => {
           unit={stat.unit}
           target={stat.target}
           onSave={(newValue) => handleSave(stat.id, newValue)}
+          customRender={stat.customRender}
         />
       ))}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <div className="flex items-center gap-3">
-          <FaWeight className="text-indigo-600 text-xl" />
-          <h3 className="text-lg font-medium text-gray-900">BMI</h3>
-        </div>
-        <p className="text-2xl font-bold mt-2">{localData?.bmi || '0'}</p>
-        <BMIIndicator bmi={parseFloat(localData?.bmi || 0)} />
-      </div>
     </div>
   );
 };

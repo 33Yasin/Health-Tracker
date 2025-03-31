@@ -11,12 +11,13 @@ const UserHealthForm = () => {
     gender: 'male',
     height: '',
     weight: '',
-    target_weight: '', // Add target weight
-    bmi: '', // Add BMI field
-    target_steps: '10000', // default values
+    target_weight: '', 
+    bmi: '', 
+    target_steps: '10000', 
     target_sleep: '8',
     target_calories: '2500',
     target_distance: '5',
+    target_water: '2500', // Default daily water intake goal in ml
   });
   const [userName, setUserName] = useState('');
   const [calculatedAge, setCalculatedAge] = useState(null);
@@ -143,20 +144,6 @@ const UserHealthForm = () => {
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium" htmlFor="target_weight">
-            Target Weight (kg):
-          </label>
-          <input
-            type="number"
-            name="target_weight"
-            value={userHealthData.target_weight}
-            onChange={handleChange}
-            required
-            className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-
         <div className="mt-8 border-t pt-6">
           <h3 className="text-lg font-semibold mb-4">Your Daily Goals</h3>
           
@@ -225,6 +212,20 @@ const UserHealthForm = () => {
                 type="number"
                 name="target_distance"
                 value={userHealthData.target_distance}
+                onChange={handleChange}
+                required
+                className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium">
+                Daily Water Intake Goal (ml):
+              </label>
+              <input
+                type="number"
+                name="target_water"
+                value={userHealthData.target_water}
                 onChange={handleChange}
                 required
                 className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"

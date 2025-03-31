@@ -9,8 +9,8 @@ export const addDailyHealth = async (data) => {
       user_id: data.user_id,
       date: new Date(data.date).toISOString(),
       field: data.field,
-      value: parseFloat(data.value) || 0,
-      height: parseFloat(data.height) || 0 // Include height for BMI calculation
+      value: data.field === 'mood' ? data.value : parseFloat(data.value) || 0,
+      height: parseFloat(data.height) || 0 
     };
 
     // Add BMI calculation if weight is being updated
@@ -18,8 +18,6 @@ export const addDailyHealth = async (data) => {
       const heightInMeters = healthData.height / 100;
       healthData.bmi = (healthData.value / (heightInMeters * heightInMeters)).toFixed(2);
     }
-
-    console.log('Sending health data:', healthData); // Debug log
 
     const response = await axios.post(`${BASE_URL}/daily-health`, healthData);
     

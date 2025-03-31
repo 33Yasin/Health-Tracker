@@ -8,7 +8,7 @@ export const createUserHealth = async (req, res) => {
       target_calories, target_distance, bmi 
     } = req.body;
 
-    // Veri doğrulama
+    // data validation
     if (!user_id || !birthDate || !gender || !height || !weight || 
         !target_weight || !target_steps || !target_sleep || 
         !target_calories || !target_distance || !bmi) {
@@ -18,7 +18,7 @@ export const createUserHealth = async (req, res) => {
       });
     }
 
-    // Mevcut kayıt kontrolü
+    // Check current record
     const existingHealth = await UserHealth.findOne({ user_id });
     if (existingHealth) {
       Object.assign(existingHealth, {
@@ -40,7 +40,7 @@ export const createUserHealth = async (req, res) => {
       });
     }
 
-    // Yeni kayıt oluştur
+    // create new record
     const userHealth = new UserHealth({
       user_id,
       birthDate: new Date(birthDate),

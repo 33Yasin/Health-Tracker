@@ -4,14 +4,27 @@ import 'react-day-picker/dist/style.css';
 
 const DatePicker = ({ selectedDate, onSelect }) => {
   const footer = selectedDate ? (
-    <p className="mt-2 text-sm text-gray-600">
-      Selected date: {selectedDate.toLocaleDateString()}
+    <p className="mt-1 text-xs text-gray-600 text-center">
+      {selectedDate.toLocaleDateString()}
     </p>
   ) : null;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Select Date</h3>
+    <div className="bg-white p-4 rounded-lg shadow-sm h-fit">
+      <style>
+        {`
+          .rdp {
+            --rdp-cell-size: 35px !important;
+            margin: 0;
+          }
+          .rdp-caption {
+            margin-bottom: 0.5em;
+          }
+          .rdp-month {
+            padding: 0;
+          }
+        `}
+      </style>
       <DayPicker
         mode="single"
         selected={selectedDate}
@@ -26,7 +39,7 @@ const DatePicker = ({ selectedDate, onSelect }) => {
             color: 'white'
           }
         }}
-        className="border rounded-lg p-4"
+        className="border rounded-lg p-2"
       />
     </div>
   );

@@ -3,7 +3,7 @@ import axios from 'axios';
 // sending user health information to the server
 export const createUserHealth = async (userHealthData) => {
   try {
-    // Veri doğrulama
+    // Data validation and preparation
     const requiredFields = [
       'user_id', 'birthDate', 'gender', 'height', 'weight',
       'target_weight', 'target_steps', 'target_sleep',
@@ -15,13 +15,13 @@ export const createUserHealth = async (userHealthData) => {
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
 
-    // BMI hesaplama
+    // BMI calculation
     if (!userHealthData.bmi && userHealthData.weight && userHealthData.height) {
       const heightInMeters = userHealthData.height / 100;
       userHealthData.bmi = (userHealthData.weight / (heightInMeters * heightInMeters)).toFixed(2);
     }
 
-    // Default hedef değerleri
+    // Default target values
     const defaultTargets = {
       target_steps: '10000',
       target_sleep: '8',
@@ -29,7 +29,7 @@ export const createUserHealth = async (userHealthData) => {
       target_distance: '5'
     };
 
-    // Eksik hedef değerleri için varsayılanları kullan
+    // use default target values if not provided
     Object.keys(defaultTargets).forEach(key => {
       if (!userHealthData[key]) {
         userHealthData[key] = defaultTargets[key];
@@ -42,7 +42,7 @@ export const createUserHealth = async (userHealthData) => {
     console.error('Create user health error details:', {
       message: error.message,
       response: error.response?.data,
-      data: userHealthData // Debug için gönderilen veriyi logla
+      data: userHealthData 
     });
     throw new Error(error.response?.data?.message || 'Error creating user health information');
   }

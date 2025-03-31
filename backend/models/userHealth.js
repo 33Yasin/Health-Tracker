@@ -12,6 +12,7 @@ const userHealthSchema = new mongoose.Schema(
   target_sleep: { type: Number, required: true },
   target_calories: { type: Number, required: true },
   target_distance: { type: Number, required: true },
+  target_water: { type: Number, required: true, default: 2500 }, // Daily water target in ml
   bmi: { type: Number, required: true },
   created_at: { type: Date, default: Date.now }
 },

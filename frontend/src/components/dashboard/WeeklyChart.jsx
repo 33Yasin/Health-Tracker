@@ -14,7 +14,7 @@ const WeeklyChart = ({ data }) => {
     { value: 'distance_km', label: 'Distance' }
   ];
 
-  // Son 7 günün verilerini al ve sırala
+  // get last 7 days of data
   const last7DaysData = [...(data || [])]
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(-7);
