@@ -148,47 +148,48 @@ const HomePage = () => {
     <div className="min-h-screen bg-gray-50">
       <NavBar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Health Dashboard</h1>
-          <span className="text-lg text-gray-600">{formatDate(selectedDate)}</span>
-        </div>
+        <div className="flex flex-col space-y-8">
+          {/* Timeline Date Picker */}
+          <DatePicker
+            selectedDate={selectedDate}
+            onSelect={setSelectedDate}
+          />
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          {/* Dashboard Title and Current Date */}
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-gray-900">Health Dashboard</h1>
+            <span className="text-lg text-gray-600">{formatDate(selectedDate)}</span>
           </div>
-        ) : (
-          <div className="space-y-8">
-            {/* Activity Cards - Updated grid layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-              {activityCards.map((card, index) => (
-                <ActivityCard 
-                  key={`${card.title}-${index}`}  // Unique key
-                  {...card} 
-                />
-              ))}
-            </div>
 
-            {/* Stats and Date Picker */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Activity Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                {activityCards.map((card, index) => (
+                  <ActivityCard 
+                    key={`${card.title}-${index}`}
+                    {...card} 
+                  />
+                ))}
+              </div>
+
+              {/* Stats */}
+              <div>
                 <StatCards
                   data={{
                     ...healthData[0],
-                    ...userHealthInfo, // add target values from userHealthInfo
+                    ...userHealthInfo,
                   }}
                   onUpdate={handleStatUpdate}
                 />
               </div>
-              <div>
-                <DatePicker
-                  selectedDate={selectedDate}
-                  onSelect={setSelectedDate}
-                />
-              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

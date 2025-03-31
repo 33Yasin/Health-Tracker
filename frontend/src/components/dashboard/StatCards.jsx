@@ -82,6 +82,17 @@ const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave, cu
     return moodColors[mood] || '#9CA3AF';
   };
 
+  const getMoodEmoji = (mood) => {
+    const emojis = {
+      'terrible': '😫',
+      'bad': '😞',
+      'neutral': '😐',
+      'good': '😊',
+      'great': '😄'
+    };
+    return emojis[mood] || '😐';
+  };
+
   // Update progress calculation
   const getProgress = () => {
     if (title === 'Mood') {
@@ -94,35 +105,56 @@ const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave, cu
   // Use localValue instead of value for display
   const progress = getProgress();
 
+  // Update progress color based on title
+  const getProgressColor = () => {
+    const colors = {
+      'Steps': '#FF9500',
+      'Distance': '#10B981',
+      'Calories': '#F56565',
+      'Water Intake': '#3B82F6',
+      'Sleep': '#63B3ED'
+    };
+    return colors[title] || '#4F46E5';
+  };
+
   const progressColor = title === 'Mood'
     ? getMoodColor(localValue)
-    : progress >= 100 ? 'bg-green-500' : 'bg-indigo-600';
+    : `bg-[${getProgressColor()}]`;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
-          <Icon 
-            className="text-2xl" 
-            style={{ 
-              color: title === 'Mood' 
-                ? getMoodColorHex(localValue)
-                : progress >= 100 ? '#10B981' : '#4F46E5' 
-            }} 
-          />
+          {title === 'Mood' ? (
+            <span className="text-2xl">{getMoodEmoji(localValue)}</span>
+          ) : (
+            <Icon 
+              className="text-2xl" 
+              style={{ 
+                color: title === 'Mood' 
+                  ? getMoodColorHex(localValue)
+                  : getProgressColor()
+              }} 
+            />
+          )}
           <h3 className="text-lg font-medium text-gray-900">{title}</h3>
         </div>
-        <div className="text-2xl font-bold text-gray-900">
-          {title === 'Mood' ? (localValue || 'neutral') : (localValue || '0')}
-        </div>
+        {title !== 'Mood' && (
+          <div className="text-2xl font-bold text-gray-900">
+            {localValue || '0'}
+          </div>
+        )}
       </div>
 
       <div className="relative h-2 bg-gray-200 rounded-full mb-4">
         <div 
           className={`absolute h-2 ${
-            title === 'Mood' ? getMoodColor(localValue) : progressColor
-          } rounded-full transition-all duration-500`}
-          style={{ width: `${progress}%` }}
+            title === 'Mood' ? getMoodColor(localValue) : 'transition-all duration-500'
+          } rounded-full`}
+          style={{ 
+            width: `${progress}%`,
+            backgroundColor: title !== 'Mood' ? getProgressColor() : undefined
+          }}
         />
       </div>
 
