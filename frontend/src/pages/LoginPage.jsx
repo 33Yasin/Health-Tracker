@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService"; // API request
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // toast css
+import { checkUserHealthExists } from "../services/userHealthService";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -18,9 +19,15 @@ function Login() {
       const userData = { email, password };
       const response = await loginUser(userData); // API request
       localStorage.setItem("token", response.token);
+      
+      // Check if user has already filled health form
+      const userId = JSON.parse(atob(response.token.split('.')[1])).id;
+      const hasHealthData = await checkUserHealthExists(userId);
+      
       toast.success("Login successful!");
       setTimeout(() => {
-        navigate("/");
+        // Düzeltilmiş route path'i
+        navigate(hasHealthData ? "/" : "/userHealthForum");
       }, 2000);
     } catch (err) {
       setError(err.message || "An error occurred while logging in.");

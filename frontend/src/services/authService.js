@@ -12,8 +12,12 @@ export const registerUser = async (userData) => {
 export const loginUser = async (userData) => {
     try {
       const response = await api.post("/login", userData);
+      // Kullanıcı adını localStorage'a kaydet
+      if(response.data.userName) {
+        localStorage.setItem('userName', response.data.userName);
+      }
       return response.data;
     } catch (error) {
       throw error.response ? error.response.data : new Error("Giriş sırasında hata oluştu.");
     }
-  };
+};
