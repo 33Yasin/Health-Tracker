@@ -38,8 +38,14 @@ const HomePage = () => {
       const token = localStorage.getItem('token');
       if (token) {
         const userId = JSON.parse(atob(token.split('.')[1])).id;
-        const response = await getDailyHealth(userId);
-        setHealthData(response.data);
+        // Seçili tarihe göre veri al
+        const startOfDay = new Date(selectedDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(selectedDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const response = await getDailyHealth(userId, startOfDay, endOfDay);
+        setHealthData(response.data || []);
       }
     } catch (error) {
       toast.error('Error loading health data');

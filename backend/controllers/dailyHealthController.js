@@ -80,9 +80,21 @@ export const addDailyHealth = async (req, res) => {
 export const getDailyHealth = async (req, res) => {
   try {
     const { user_id } = req.params;
-    const dailyHealth = await DailyHealth.find({ user_id })
-      .sort({ date: -1 })
-      .limit(30); // Last 30 days
+    const { startDate, endDate } = req.query;
+
+    const query = { user_id };
+    
+    // Eğer tarih parametreleri varsa, tarihe göre filtrele
+    if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    const dailyHealth = await DailyHealth.find(query)
+      .sort({ date: -1 });
+
     res.status(200).json({ success: true, data: dailyHealth });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

@@ -37,9 +37,14 @@ export const addDailyHealth = async (data) => {
   }
 };
 
-export const getDailyHealth = async (userId) => {
+export const getDailyHealth = async (userId, startDate, endDate) => {
   try {
-    const response = await axios.get(`${BASE_URL}/daily-health/${userId}`);
+    const response = await axios.get(`${BASE_URL}/daily-health/${userId}`, {
+      params: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      }
+    });
     return {
       ...response.data,
       data: response.data.data.map(item => ({
