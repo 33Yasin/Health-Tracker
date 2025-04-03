@@ -44,7 +44,7 @@ const DatePicker = ({ selectedDate, onSelect }) => {
           onClick={handlePrevDay}
           className="p-2 hover:bg-gray-100 rounded-full"
         >
-          <FaChevronLeft className="text-gray-600" />
+          <FaChevronLeft className="text-gray-600 cursor-pointer" />
         </button>
 
         <div className="flex space-x-4 overflow-x-auto py-2">
@@ -52,7 +52,7 @@ const DatePicker = ({ selectedDate, onSelect }) => {
             <button
               key={date.toISOString()}
               onClick={() => onSelect(date)}
-              className={`flex flex-col items-center min-w-[60px] p-2 rounded-lg transition-all
+              className={`flex flex-col items-center min-w-[60px] p-2 rounded-lg transition-all cursor-pointer
                 ${date.toDateString() === selectedDate.toDateString()
                   ? 'bg-indigo-600 text-white'
                   : 'hover:bg-gray-100'}
@@ -68,7 +68,7 @@ const DatePicker = ({ selectedDate, onSelect }) => {
           onClick={handleNextDay}
           className="p-2 hover:bg-gray-100 rounded-full"
         >
-          <FaChevronRight className="text-gray-600" />
+          <FaChevronRight className="text-gray-600 cursor-pointer" />
         </button>
       </div>
     </div>

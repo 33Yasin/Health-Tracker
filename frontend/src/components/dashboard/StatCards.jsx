@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaBed, FaWalking, FaRuler, FaWeight, FaPlus, FaMinus, FaSave, FaGlassWhiskey } from 'react-icons/fa';
+import { FaBed, FaWalking, FaMapMarkerAlt, FaWeight, FaPlus, FaMinus, FaSave, FaGlassWhiskey } from 'react-icons/fa';
 import { GiFireDash } from 'react-icons/gi';
 import { MdMood } from 'react-icons/md';
 
@@ -30,19 +30,22 @@ const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave, cu
   const [inputValue, setInputValue] = useState('');
   const [localValue, setLocalValue] = useState(value);
 
-  // Update localValue when prop value changes
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
 
-  const handleSave = async () => {
+  const handleOperation = async (operation) => {
     if (!inputValue) return;
     
+    const currentValue = parseFloat(localValue) || 0;
     const inputNum = parseFloat(inputValue);
-    
+    const newValue = operation === 'add' 
+      ? currentValue + inputNum 
+      : currentValue - inputNum;
+
     try {
-      await onSave(inputNum);
-      setLocalValue(inputNum); // Update local display and progress immediately
+      await onSave(newValue);
+      setLocalValue(newValue);
       setInputValue('');
     } catch (error) {
       console.error('Error saving:', error);
@@ -93,7 +96,6 @@ const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave, cu
     return emojis[mood] || '😐';
   };
 
-  // Update progress calculation
   const getProgress = () => {
     if (title === 'Mood') {
       return getMoodProgress(localValue);
@@ -102,10 +104,8 @@ const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave, cu
     return Math.min((parseFloat(localValue) / parseFloat(target)) * 100, 100);
   };
 
-  // Use localValue instead of value for display
   const progress = getProgress();
 
-  // Update progress color based on title
   const getProgressColor = () => {
     const colors = {
       'Steps': '#FF9500',
@@ -168,16 +168,23 @@ const StatCard = ({ title, value, icon: Icon, onChange, unit, target, onSave, cu
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Enter value"
-              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full p-2 border rounded-lg focus:outline-none hover:border-gray-400"
             />
           </div>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-          >
-            <FaSave />
-            Save
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleOperation('add')}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center justify-center cursor-pointer"
+            >
+              <FaPlus />
+            </button>
+            <button
+              onClick={() => handleOperation('subtract')}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center justify-center cursor-pointer"
+            >
+              <FaMinus />
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -201,8 +208,8 @@ const MoodSelector = ({ value, onChange }) => {
           onClick={() => onChange(mood.value)}
           className={`flex flex-col items-center p-1 rounded-lg transition-all ${
             value === mood.value 
-              ? 'bg-indigo-100 scale-105 shadow-sm' 
-              : 'hover:bg-gray-100'
+              ? 'bg-indigo-100 scale-105 shadow-sm cursor-pointer' 
+              : 'hover:bg-gray-100 cursor-pointer'
           }`}
           title={mood.label}
         >
@@ -217,7 +224,6 @@ const MoodSelector = ({ value, onChange }) => {
 const StatCards = ({ data, onUpdate }) => {
   const [localData, setLocalData] = useState(data);
 
-  // Update local data when props change
   useEffect(() => {
     if (data) {
       setLocalData(data);
@@ -230,7 +236,6 @@ const StatCards = ({ data, onUpdate }) => {
     return (weight / (heightInMeters * heightInMeters)).toFixed(2);
   };
 
-  // Update BMI whenever weight or height changes
   useEffect(() => {
     if (localData?.weight && localData?.height) {
       const newBmi = calculateBMI(localData.weight, localData.height);
@@ -262,7 +267,6 @@ const StatCards = ({ data, onUpdate }) => {
   const handleSave = async (id, newValue) => {
     try {
       await onUpdate(id, newValue);
-      // Update local state immediately after successful save
       setLocalData(prev => ({
         ...prev,
         [id]: newValue
@@ -283,7 +287,7 @@ const StatCards = ({ data, onUpdate }) => {
     { 
       id: 'distance_km', 
       title: 'Distance', 
-      icon: FaWalking, 
+      icon: FaMapMarkerAlt, 
       unit: 'km', 
       target: data?.target_distance || 0 
     },
