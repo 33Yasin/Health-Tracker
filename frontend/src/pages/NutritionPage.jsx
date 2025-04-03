@@ -5,7 +5,6 @@ const NutritionPage = () => {
   return (
     <div>
         <NavBar />
-        <h1>Nutrition Page</h1>
     </div>
   )
 }

@@ -21,22 +21,15 @@ export const createUserHealth = async (userHealthData) => {
       userHealthData.bmi = (userHealthData.weight / (heightInMeters * heightInMeters)).toFixed(2);
     }
 
-    // Default target values
-    const defaultTargets = {
-      target_steps: '10000',
-      target_sleep: '8',
-      target_calories: '2500',
-      target_distance: '5'
+    // Remove default values section and directly send user input
+    const formattedData = {
+      ...userHealthData,
+      target_water: parseFloat(userHealthData.target_water), // Ensure target_water is included
+      // Calculate BMI
+      bmi: userHealthData.bmi || ((userHealthData.weight / Math.pow(userHealthData.height / 100, 2)).toFixed(2))
     };
 
-    // use default target values if not provided
-    Object.keys(defaultTargets).forEach(key => {
-      if (!userHealthData[key]) {
-        userHealthData[key] = defaultTargets[key];
-      }
-    });
-
-    const response = await axios.post('http://localhost:5000/api/user-health', userHealthData);
+    const response = await axios.post('http://localhost:5000/api/user-health', formattedData);
     return response.data;
   } catch (error) {
     console.error('Create user health error details:', {

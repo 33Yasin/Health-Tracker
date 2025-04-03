@@ -5,20 +5,21 @@ export const createUserHealth = async (req, res) => {
     const { 
       user_id, birthDate, gender, height, weight, 
       target_weight, target_steps, target_sleep, 
-      target_calories, target_distance, bmi 
+      target_calories, target_distance, target_water, // Add target_water
+      bmi 
     } = req.body;
 
-    // data validation
+    // Validate all required fields including target_water
     if (!user_id || !birthDate || !gender || !height || !weight || 
         !target_weight || !target_steps || !target_sleep || 
-        !target_calories || !target_distance || !bmi) {
+        !target_calories || !target_distance || !target_water || !bmi) {
       return res.status(400).json({ 
         message: "Missing required fields",
         received: req.body
       });
     }
 
-    // Check current record
+    // Check for existing record
     const existingHealth = await UserHealth.findOne({ user_id });
     if (existingHealth) {
       Object.assign(existingHealth, {
@@ -31,6 +32,7 @@ export const createUserHealth = async (req, res) => {
         target_sleep,
         target_calories,
         target_distance,
+        target_water, // Include target_water in update
         bmi
       });
       await existingHealth.save();
@@ -40,7 +42,7 @@ export const createUserHealth = async (req, res) => {
       });
     }
 
-    // create new record
+    // Create new record with target_water
     const userHealth = new UserHealth({
       user_id,
       birthDate: new Date(birthDate),
@@ -52,6 +54,7 @@ export const createUserHealth = async (req, res) => {
       target_sleep,
       target_calories,
       target_distance,
+      target_water, // Include target_water in new record
       bmi
     });
 

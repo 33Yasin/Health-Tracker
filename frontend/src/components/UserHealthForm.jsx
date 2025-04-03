@@ -17,7 +17,7 @@ const UserHealthForm = () => {
     target_sleep: '8',
     target_calories: '2500',
     target_distance: '5',
-    target_water: '2500', // Default daily water intake goal in ml
+    target_water: '', // Set empty string instead of default value
   });
   const [userName, setUserName] = useState('');
   const [calculatedAge, setCalculatedAge] = useState(null);
@@ -68,6 +68,7 @@ const UserHealthForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // No need for special handling of target_water, send as is
       await createUserHealth(userHealthData);
       toast.success('Health information saved successfully');
       setTimeout(() => {
