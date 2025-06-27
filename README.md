@@ -3,7 +3,7 @@
 ![health tracker](https://github.com/user-attachments/assets/49e52aae-175d-44be-8545-4b6d6024fdaf)
 
 
-Health Tracker, kullanıcıların günlük sağlık verilerini (adım, mesafe, kalori, su, uyku vb.) kolayca takip edebileceği ve analiz edebileceği bir tam-stack web uygulamasıdır.
+Health Tracker, kullanıcıların günlük sağlık verilerini (adım, mesafe, kalori, su, uyku vb.) kolayca takip edebileceği ve analiz edebileceği bir full-stack web uygulamasıdır.
 
 ---
 
